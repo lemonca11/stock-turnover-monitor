@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <title>成交额预警 - 七大科技股</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { padding: 40px; background-color: #f9f9fb; }
+    .container { max-width: 800px; margin: auto; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📊 七大科技股 - 中午成交额预警</h1>
+    {% if message %}
+      <div class="alert alert-info">{{ message }}</div>
+    {% endif %}
+    {% if table_html %}
+      <div class="table-responsive">{{ table_html | safe }}</div>
+    {% endif %}
+  </div>
+</body>
+</html>
