@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import time
 import os
 
-API_KEY = '你的_TwelveData_API_KEY'
+API_KEY = 'YWXKQH5RRGUN5YCL'
 SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA']
 BASE_URL = 'https://api.twelvedata.com/time_series'
 
