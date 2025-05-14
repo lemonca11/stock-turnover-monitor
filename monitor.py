@@ -8,9 +8,9 @@ API_KEY = 'YWXKQH5RRGUN5YCL'
 SYMBOLS = ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'NVDA', 'META', 'TSLA']
 BASE_URL = 'https://api.twelvedata.com/time_series'
 
-def get_intraday_turnover(symbol, date):
-    start = f"{date} 09:30:00"
-    end = f"{date} 12:00:00"
+def get_intraday_turnover(symbol, date_str):
+    start = f"{date_str} 09:30:00"
+    end = f"{date_str} 12:00:00"
     params = {
         'symbol': symbol,
         'interval': '1min',
@@ -20,27 +20,30 @@ def get_intraday_turnover(symbol, date):
         'format': 'JSON',
         'outputsize': 180
     }
-    response = requests.get(BASE_URL, params=params)
-    data = response.json()
-    if 'values' not in data or not data['values']:
-        print(f"{symbol} ❌ 无数据：{data.get('message', '返回为空')}")
+    try:
+        response = requests.get(BASE_URL, params=params, timeout=10)
+        data = response.json()
+        if 'values' not in data or not data['values']:
+            print(f"{symbol} ❌ 无数据：{data.get('message', '返回为空')}")
+            return None
+        df = pd.DataFrame(data['values'])
+        df['datetime'] = pd.to_datetime(df['datetime'])
+        df['volume'] = df['volume'].astype(float)
+        df['close'] = df['close'].astype(float)
+        df['成交额'] = df['volume'] * df['close']
+        return df['成交额'].sum()
+    except Exception as e:
+        print(f"{symbol} ⚠️ 请求失败：{str(e)}")
         return None
-    df = pd.DataFrame(data['values'])
-    df['datetime'] = pd.to_datetime(df['datetime'])
-    df['volume'] = df['volume'].astype(float)
-    df['close'] = df['close'].astype(float)
-    df['成交额'] = df['volume'] * df['close']
-    return df['成交额'].sum()
 
-def main():
+def run_monitor():
     now = datetime.now()
-    today = (now - timedelta(days=0)).date()
-    yesterday = (now - timedelta(days=1)).date()
+    today = now.date()
+    yesterday = today - timedelta(days=1)
 
     results = []
-
     for symbol in SYMBOLS:
-        print(f"🔍 正在分析 {symbol}...")
+        print(f"📊 检查 {symbol}...")
         today_val = get_intraday_turnover(symbol, str(today))
         time.sleep(1.5)
         yesterday_val = get_intraday_turnover(symbol, str(yesterday))
@@ -70,5 +73,8 @@ def main():
         df.to_csv(filename, index=False)
         print("✅ 所有股票今日成交额 ≥ 昨日，无预警。")
 
+    return df  # 可供 Flask 页面读取显示
+
+# 脚本独立运行支持
 if __name__ == "__main__":
-    main()
+    run_monitor()
