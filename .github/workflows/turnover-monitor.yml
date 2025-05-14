@@ -1,0 +1,31 @@
+name: Run Turnover Monitor Daily
+
+on:
+  schedule:
+    - cron: '5 16 * * *'  # 每天 UTC 时间 16:05 = 北京时间 00:05
+  workflow_dispatch:
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run turnover monitor
+        run: python monitor.py
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnover-report
+          path: static/*.csv
